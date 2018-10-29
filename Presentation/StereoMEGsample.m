@@ -23,7 +23,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-10-15 12:46:58 ban"
+% Last Update: "2018-10-29 10:28:52 ban"
 %
 %
 % [input variables]
@@ -145,7 +145,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % %%% stimulus presentation mode
 % sparam.binocular_display=true; % true or false. if false, only left-eye images are presented to both eyes (required just to measure the effect of monocular cues in RDS)
 % sparam.give_feedback=false;    % true or false. if true, feedback (whether the response is correct or not) is given
-% sparam.task_interval=3:5;      % frequency the depth discrimination task, the task occurs every sparam.task_interval trials
+% sparam.task_interval=4:6;      % frequency the depth discrimination task, the task occurs every sparam.task_interval trials
 %
 % %%% target image generation
 % sparam.fieldSize=[12,12]; % target stimulus size in deg
@@ -181,7 +181,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % % * the parameters required to define stimulus conditions (slant stimuli)
 % %
 % % sparam.theta_deg      : angles of the slant, negative = top is near, a [1 x N (= #conditions)] matrix
-% % sparam.orient_deg     : tilted orientations of the slant in deg, a [1 x N (= #conditions)] matrix 
+% % sparam.orient_deg     : tilted orientations of the slant in deg, a [1 x N (= #conditions)] matrix
 % % sparam.mask_type      : 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent, a [1 x N (= #conditions)] cell
 % % sparam.mask_orient_id : ID of the mask to be used, 1 = sparam.mask_orient_deg(1), 2 = sparam.mask_orient_deg(2), ...., a [1 x N (= #conditions)] matrix
 % %
@@ -204,7 +204,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % % sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
 % % sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
 % % sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
-% 
+%
 % sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
 % sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
 % sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
@@ -231,6 +231,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % %%% stimulus display durations etc in 'msec'
 % sparam.initial_fixation_time=500; % duration in msec for initial fixation, integer (msec)
 % sparam.condition_duration=1300;   % duration in msec for each condition, integer (msec)
+% sparam.stim_on_probe_duration=[100,100]; % durations in msec for presenting a probe before the actual stimulus presentation (msec) [duration_of_red_fixation,duration_of_waiting]. if [0,0], the probe is ignored.
 % sparam.stim_on_duration=300;      % duration in msec for simulus ON period for each trial, integer (msec)
 % sparam.response_duration=1500;    % duration in msec for response, integer (msec)
 % sparam.feedback_duration=500;     % duration in msec for correct/incorrect feedback, integer (msec)
@@ -240,8 +241,8 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % sparam.bgcolor=[128,128,128];
 %
 % %%% fixation size and color
-% sparam.fixsize=24;         % the whole size (a circular hole) of the fixation cross in pixel
-% sparam.fixlinesize=[12,2]; % [height,width] of the fixation line in pixel
+% sparam.fixsize=18;        % the whole size (a circular hole) of the fixation cross in pixel
+% sparam.fixlinesize=[9,2]; % [height,width] of the fixation line in pixel
 % sparam.fixcolor=[255,255,255];
 %
 % %%% RGB for background patches
@@ -483,7 +484,7 @@ else  % if useStimulusFile
   %%% stimulus presentation mode
   sparam.binocular_display=true; % true or false. if false, only left-eye images are presented to both eyes (required just to measure the effect of monocular cues in RDS)
   sparam.give_feedback=false;    % true or false. if true, feedback (whether the response is correct or not) is given
-  sparam.task_interval=3:5;      % frequency the depth discrimination task, the task occurs every sparam.task_interval trials
+  sparam.task_interval=4:6;      % frequency the depth discrimination task, the task occurs every sparam.task_interval trials
 
   %%% target image generation
   sparam.fieldSize=[12,12]; % target stimulus size in deg
@@ -519,7 +520,7 @@ else  % if useStimulusFile
   % * the parameters required to define stimulus conditions (slant stimuli)
   %
   % sparam.theta_deg      : angles of the slant, negative = top is near, a [1 x N (= #conditions)] matrix
-  % sparam.orient_deg     : tilted orientations of the slant in deg, a [1 x N (= #conditions)] matrix 
+  % sparam.orient_deg     : tilted orientations of the slant in deg, a [1 x N (= #conditions)] matrix
   % sparam.mask_type      : 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent, a [1 x N (= #conditions)] cell
   % sparam.mask_orient_id : ID of the mask to be used, 1 = sparam.mask_orient_deg(1), 2 = sparam.mask_orient_deg(2), ...., a [1 x N (= #conditions)] matrix
   %
@@ -542,7 +543,7 @@ else  % if useStimulusFile
   % sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
   % sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
   % sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
-  
+
   sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
   sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
   sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
@@ -570,6 +571,7 @@ else  % if useStimulusFile
   %%% stimulus display durations etc in 'msec'
   sparam.initial_fixation_time=500; % duration in msec for initial fixation, integer (msec)
   sparam.condition_duration=1300;   % duration in msec for each condition, integer (msec)
+  sparam.stim_on_probe_duration=[100,100]; % durations in msec for presenting a probe before the actual stimulus presentation (msec) [duration_of_red_fixation,duration_of_waiting]. if [0,0], the probe is ignored.
   sparam.stim_on_duration=300;      % duration in msec for simulus ON period for each trial, integer (msec)
   sparam.response_duration=1500;    % duration in msec for response, integer (msec)
   sparam.feedback_duration=500;     % duration in msec for correct/incorrect feedback, integer (msec)
@@ -578,8 +580,8 @@ else  % if useStimulusFile
   sparam.stim_off_duration=sparam.condition_duration-sparam.stim_on_duration;
 
   %%% fixation size and color
-  sparam.fixsize=24;         % the whole size (a circular hole) of the fixation cross in pixel
-  sparam.fixlinesize=[12,2]; % [height,width] of the fixation line in pixel
+  sparam.fixsize=18;        % the whole size (a circular hole) of the fixation cross in pixel
+  sparam.fixlinesize=[9,2]; % [height,width] of the fixation line in pixel
   sparam.fixcolor=[255,255,255];
 
   %%% RGB for background patches
@@ -1258,7 +1260,40 @@ while ~isempty(condition_ID_holder)
     fprintf('TASK ID:%02d, THETA:% 3.2f, ORIENTATION:% 3d\n',stimID,theta_deg,orient_deg);
   end
 
+  %% display a probe (a red fixation) before presenting the stimulus
+  if sparam.stim_on_probe_duration(1)~=0
+    event=event.add_event('Probe','');
+    for nn=1:1:nScr
+      Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+      Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
+      Screen('DrawTexture',winPtr,task_fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
+      Screen('DrawTexture',winPtr,notrg{nn},[],CenterRect(trgRect,winRect)+repmat(sparam.phototrg_pos,[1,2])+yshift);
+    end
+    Screen('DrawingFinished',winPtr);
+    Screen('Flip',winPtr,[],[],[],1);
+
+    % wait for stim_on_probe_duration(1)
+    tStimulation=tStimulation+sparam.stim_on_probe_duration(1);
+    while GetSecs()<tStimulation, [resps,event]=resps.check_responses(event); end
+  end
+
+  if sparam.stim_on_probe_duration(2)~=0
+    for nn=1:1:nScr
+      Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+      Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
+      Screen('DrawTexture',winPtr,fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
+      Screen('DrawTexture',winPtr,notrg{nn},[],CenterRect(trgRect,winRect)+repmat(sparam.phototrg_pos,[1,2])+yshift);
+    end
+    Screen('DrawingFinished',winPtr);
+    Screen('Flip',winPtr,[],[],[],1);
+
+    % wait for stim_on_probe_duration(2)
+    tStimulation=tStimulation+sparam.stim_on_probe_duration(2);
+    while GetSecs()<tStimulation, [resps,event]=resps.check_responses(event); end
+  end
+
   %% stimulus ON
+  event=event.add_event('Stimulus on','');
   for nn=1:1:nScr
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
