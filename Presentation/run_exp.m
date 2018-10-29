@@ -28,7 +28,7 @@ function OK=run_exp(subj,exp_id,acq_id)
 %           without any error [true/false]
 %
 % Created    : "2018-09-27 11:47:05 ban"
-% Last Update: "2018-10-26 10:32:01 ban"
+% Last Update: "2018-10-29 14:06:03 ban"
 
 % check the input variables
 if nargin<3, help(mfilename()); return; end
@@ -74,8 +74,8 @@ if ~exist(subj_dir,'dir')
 end
 
 % set display and stimulus file name
-disp_fname='oblique3d_display';
-stim_fname=sprintf('oblique3d_stimulus_%02d',exp_id);
+disp_fname='slant3d_display';
+stim_fname=sprintf('slant3d_stimulus_%02d',exp_id);
 
 % set the program body
 run_script='StereoMEGsample';
@@ -85,15 +85,15 @@ run_script='StereoMEGsample';
 % ********************************************************************************************************
 
 % loading gamma_table
-%load(fullfile('..','gamma_table','ASUS_ROG_Swift_PG278Q','181003','cbs','gammatablePTB.mat'));
-%load(fullfile('..','gamma_table','ASUS_VG278HE','181003','cbs','gammatablePTB.mat'));
-load(fullfile('..','gamma_table','MEG_B1','151225','cbs','gammatablePTB.mat'));
-%gammatable=repmat(linspace(0.0,1.0,256),3,1)'; %#ok % a simple linear gamma
+%load(fullfile('..','gamma_table','ASUS_ROG_Swift_PG278Q','181003','cbs','gammatablePTB.mat')); gamma_table=gammatable;
+%load(fullfile('..','gamma_table','ASUS_VG278HE','181003','cbs','gammatablePTB.mat')); gamma_table=gammatable;
+load(fullfile('..','gamma_table','MEG_B1','151225','cbs','gammatablePTB.mat')); gamma_table=gammatable;
+%gamma_table=repmat(linspace(0.0,1.0,256),3,1)'; %#ok % a simple linear gamma
 
 %% run stimulus presentations
 for ii=acq_id
   %% run the stimulus presentation script
-  eval(sprintf('%s(''%s'',%d,''%s'',''%s'',gammatable,0);',run_script,subj,ii,disp_fname,stim_fname));
+  eval(sprintf('%s(''%s'',%d,''%s'',''%s'',gamma_table,0);',run_script,subj,ii,disp_fname,stim_fname));
 end
 OK=true;
 
