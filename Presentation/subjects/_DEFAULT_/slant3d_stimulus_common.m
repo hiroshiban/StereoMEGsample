@@ -4,7 +4,7 @@
 % Oblique3D_QUEST.m
 %
 % Created    : "2018-10-09 15:47:27 ban"
-% Last Update: "2018-10-29 14:00:53 ban"
+% Last Update: "2018-10-30 09:28:15 ban"
 % ************************************************************
 
 % "sparam" means "stimulus generation parameters"
@@ -12,7 +12,7 @@
 %%% stimulus presentation mode
 sparam.binocular_display=true; % true or false. if false, only left-eye images are presented to both eyes (required just to measure the effect of monocular cues in RDS)
 sparam.give_feedback=false;    % true or false. if true, feedback (whether the response is correct or not) is given
-sparam.task_interval=4:6;      % frequency the depth discrimination task, the task occurs every sparam.task_interval(1)-sparam.task_interval(end) (randomly selected) trials
+sparam.task_interval=4:6;      % frequency of the depth discrimination task, the task occurs every sparam.task_interval(1)-sparam.task_interval(end) (randomly selected) trials
 
 %%% target image generation
 sparam.fieldSize=[12,12]; % target stimulus size in deg
