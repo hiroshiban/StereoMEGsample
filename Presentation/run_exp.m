@@ -12,11 +12,11 @@ function OK=run_exp(subj,exp_id,acq_id)
 % [input]
 % subj   : subject's name, e.g. 'HB'
 % exp_id : experiment ID that you want to run,
-%          should be 0 (practive), or 1,2,3,...,8 (main experiments).
-%          here exp_id 1 & 2:  90 deg slants (vertical)
-%                      3 & 4:  90 deg slants (horizontal)
-%                      5 & 6:  45 deg slants (from right-horizontal meridian, counter-clockwise)
-%                      7 & 8: 135 deg slants (from right-horizontal meridian, counter-clockwise)
+%          should be 0 (practice), or 1,2,3,... (main experiments).
+%          please prepare individual stimulus_files for each of your experiment
+%          conditions and save them like stim_fname=sprintf('oblique3d_stimulus_%02d',exp_id);.
+%          then, by specifying the experiment condition by exp_id, you can run
+%          all the required experiment from this script.
 %          multiple numbers (array) can be accepted.
 %          numel(exp_id) should be the same with numel(acq_id).
 % acq_id : acquisition number (run), 1,2,3,...
@@ -28,18 +28,18 @@ function OK=run_exp(subj,exp_id,acq_id)
 %           without any error [true/false]
 %
 % Created    : "2018-09-27 11:47:05 ban"
-% Last Update: "2018-10-29 14:06:03 ban"
+% Last Update: "2018-10-31 11:03:04 ban"
 
 % check the input variables
 if nargin<3, help(mfilename()); return; end
 if ~isempty(find(acq_id<1,1)), error('acq_id should be 1,2,3,... check input variable'); end
 
-if isempty(intersect(exp_id,0:8))
-  warning('MATLAB:exp_id_error',...
-  'exp_id should be one of 0(practice), or 1,2,...,8 (main experiment). check the input variables');
-  OK=false;
-  return;
-end
+% if isempty(intersect(exp_id,0:8))
+%   warning('MATLAB:exp_id_error',...
+%   'exp_id should be one of 0(practice), or 1,2,...,8 (main experiment). check the input variables');
+%   OK=false;
+%   return;
+% end
 
 if length(exp_id)~=numel(acq_id), error('the numbers of exp_mode and acq_id mismatch. check input variable'); end
 

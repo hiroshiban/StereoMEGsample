@@ -23,7 +23,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-10-29 14:05:52 ban"
+% Last Update: "2018-11-06 13:04:40 ban"
 %
 %
 % [input variables]
@@ -793,12 +793,6 @@ sparam.cm_per_pix=1/sparam.pix_per_cm;
 % pixles per degree
 sparam.pix_per_deg=round( 1/( 180*atan(sparam.cm_per_pix/sparam.vdist)/pi ) );
 
-% sound sources for feedback correct/incorrect
-if sparam.give_feedback
-  beep_correct=sin(2*pi*0.2*(0:900));
-  beep_incorrect=sin(2*pi*0.012*(0:900));
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Initializing height fields & image shifts by binocular disparities
@@ -1355,21 +1349,18 @@ while ~isempty(condition_ID_holder)
     % the line below are just for debugging of response acquisitions and plotting results
     %respFlag=1; response=mod(randi(2,[1,1]),2);
 
-    response=0;
+    respFlag=0;
     tResponse=tResponse+sparam.response_duration;
     while GetSecs()<tResponse
       [resps,event,keyCode]=resps.check_responses(event);
-
-      % correct response
-      if (keyCode(dparam.Key1) && theta_deg<0) || (keyCode(dparam.Key2) && theta_deg>0)
-        response=1;
+      if (keyCode(dparam.Key1) && theta_deg<0) || (keyCode(dparam.Key2) && theta_deg>0) % correct response
+        event=event.add_event('Response','Correct');
+        respFlag=1;
         break;
-      % incorrect
-      elseif (keyCode(dparam.Key1) && theta_deg>0) || (keyCode(dparam.Key2) && theta_deg<0)
-        response=0;
+      elseif (keyCode(dparam.Key1) && theta_deg>0) || (keyCode(dparam.Key2) && theta_deg<0) % incorrect response
+        event=event.add_event('Response','Incorrect');
+        respFlag=0;
         break;
-      else % press the other key or mistake
-        response=0;
       end
     end
 
@@ -1378,30 +1369,23 @@ while ~isempty(condition_ID_holder)
       tFeedback=GetSecs();
 
       % display feedback
+      if respFlag
+        event=event.add_event('Feedback','Correct');
+      else
+        event=event.add_event('Feedback','Incorrect');
+      end
       for nn=1:1:nScr
         Screen('SelectStereoDrawBuffer',winPtr,nn-1);
         Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
-        if response
-          event=event.add_event('Feedback','correct');
+        if respFlag
           Screen('DrawTexture',winPtr,correct_fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
         else
-          event=event.add_event('Feedback','incorrect');
           Screen('DrawTexture',winPtr,incorrect_fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
         end
         Screen('DrawTexture',winPtr,notrg{nn},[],CenterRect(trgRect,winRect)+repmat(sparam.phototrg_pos,[1,2])+yshift);
-      end
-      Screen('DrawingFinished',winPtr);
-      Screen('Flip',winPtr,[],[],[],1);
-
-      % sound feedback
-      try % if this script can write data to sound devide
-        if response
-          Snd('Play',beep_correct,22000);
-        else
-          Snd('Play',beep_incorrect,22000);
-        end
-      catch %#ok %lasterror
-        % do nothing
+        Screen('DrawingFinished',winPtr);
+        Screen('Flip',winPtr,[],[],[],1);
+        PlaySound(respFlag); % high(correct)/low(incorrect) tone sound
       end
 
       % wait for feedback_duration
@@ -1454,6 +1438,7 @@ experimentDuration=GetSecs()-the_experiment_start;
 event=event.add_event('End',[]);
 disp(' ');
 disp(['Experiment Duration was: ',num2str(experimentDuration),' secs']);
+disp(' ');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
