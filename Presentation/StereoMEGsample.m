@@ -1,6 +1,6 @@
-function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, overwrite_flg, force_proceed_flag)
+function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwrite_flg,force_proceed_flag)
 
-% function StereoMEGsample(subjID, acq, :displayfile, :stimlusfile, :gamma_table, :overwrite_flg, :force_proceed_flag)
+% function StereoMEGsample(subjID,acq,:displayfile,:stimlusfile,:gamma_table,:overwrite_flg,:force_proceed_flag)
 % (: is optional)
 %
 % - Displays 3D slant consisted of Random-Dot-Stereogram (RDS) with horizontal
@@ -23,7 +23,7 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-11-06 13:04:40 ban"
+% Last Update: "2018-11-12 13:51:03 ban"
 %
 %
 % [input variables]
@@ -300,11 +300,16 @@ function StereoMEGsample(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 
 %clear global; clear mex;
 if nargin<2, help(mfilename()); return; end
+if nargin<3 || isempty(displayfile), displayfile=[]; end
+if nargin<4 || isempty(stimulusfile), stimulusfile=[]; end
+if nargin<5 || isempty(gamma_table), gamma_table=[]; end
 if nargin<6 || isempty(overwrite_flg), overwrite_flg=0; end
 if nargin<7 || isempty(force_proceed_flag), force_proceed_flag=0; end
 
 % check the aqcuisition number.
 if acq<1, error('Acquistion number must be integer and greater than zero'); end
+
+% check the subject directory
 if ~exist(fullfile(pwd,'subjects',subjID),'dir'), error('can not find subj directory. check input variable.'); end
 
 
@@ -359,7 +364,7 @@ InitializeRandomSeed();
 %%%% Reset display Gamma-function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin<5 || isempty(gamma_table)
+if isempty(gamma_table)
   gamma_table=repmat(linspace(0.0,1.0,256),3,1)'; %#ok
   GammaResetPTB(1.0);
 else
@@ -368,241 +373,92 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Load and validate the contents of display and stimulus files
+%%%% Validate dparam (displayfile) and sparam (stimulusfile) structures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% the codes below may be too redundant. you can omit those lines if you can care about the input
-% variables and the contents of display and stimulus files by yourself.
+% check the display/stimulus files
+if ~isempty(displayfile)
+  if ~strcmpi(displayfile(end-1:end),'.m'), displayfile=[displayfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,displayfile),'file');
+  if ~is_exist, error(message); end
+end
 
-% check the number of nargin
-if nargin<=1
-  error('takes at least 2 input variables: StereoMEGsample(subjID, acq, :displayfile, :stimulusfile, :gamma_table, :overwrite_flg)');
-elseif nargin>6
-  error('takes at most 7 input variables: StereoMEGsample(subjID, acq, :displayfile, :stimulusfile, :gamma_table, :overwrite_flg, :force_proceed_flag)');
-else
-  if nargin==2
-    useDisplayFile=false;
-    useStimulusFile=false;
-  end
-  if nargin>=3
-    % reading display (presentation) parameters from file
-    if strcmpi(displayfile(end-1:end),'.m')
-      dfile=fullfile(rootDir,'subjects',subjID,displayfile);
-    else
-      dfile=fullfile(rootDir,'subjects',subjID,[displayfile,'.m']);
-    end
-    [is_exist,message] = IsExistYouWant(dfile,'file');
-    if is_exist
-      useDisplayFile=true;
-    else
-      error(message);
-    end
-  end
-  if nargin>=4
-    % reading stimulus generation parameters from file
-    if strcmpi(stimulusfile(end-1:end),'.m')
-      sfile=fullfile(rootDir,'subjects',subjID,stimulusfile);
-    else
-      sfile=fullfile(rootDir,'subjects',subjID,[stimulusfile '.m']);
-    end
-    [is_exist,message]=IsExistYouWant(sfile,'file');
-    if is_exist
-      useStimulusFile=true;
-    else
-      error(message);
-    end
-  end
-end % if nargin
+if ~isempty(stimulusfile)
+  if ~strcmpi(stimulusfile(end-1:end),'.m'), stimulusfile=[stimulusfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,stimulusfile),'file');
+  if ~is_exist, error(message); end
+end
 
-% check condition files
+% organize dparam
+dparam=struct(); % initialize
+if ~isempty(displayfile), run(fullfile(rootDir,'subjects',subjID,displayfile)); end % load specific dparam parameters configured for each of the participants
+dparam=ValidateStructureFields(dparam,... % validate fields and set the default values to missing field(s)
+         'ExpMode','shutter',...
+         'scrID',0,...
+         'start_method',0,...
+         'custom_trigger',KbName(84),...
+         'Key1',37,...
+         'Key2',39,...
+         'fullscr',false,...
+         'ScrHeight',1440,...
+         'ScrWidth',2560,...
+         'yshift',0);
 
-% set display parameters
-if useDisplayFile
+% organize sparam
+sparam=struct(); % initialize
+if ~isempty(stimulusfile), run(fullfile(rootDir,'subjects',subjID,stimulusfile)); end % load specific sparam parameters configured for each of the participants
+sparam=ValidateStructureFields(sparam,... % validate fields and set the default values to missing field(s)
+         'binocular_display',true,...
+         'give_feedback',false,...
+         'task_interval',4:6,...
+         'fieldSize',[12,12],...
+         'mask_theta_deg',[-52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, 52.5],...
+         'mask_orient_deg',[0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5],...
+         'theta_deg',repmat([ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5],[1,8]),...
+         'orient_deg',[0.*ones(1,8),22.5.*ones(1,8),45.*ones(1,8),67.5.*ones(1,8),90.*ones(1,8),112.5.*ones(1,8),135.*ones(1,8),157.5.*ones(1,8)],...
+         'mask_type',repmat({'xy'},[1,64]),...
+         'mask_orient_id',[1.*ones(1,8),2.*ones(1,8),3.*ones(1,8),4.*ones(1,8),5.*ones(1,8),6.*ones(1,8),7.*ones(1,8),8.*ones(1,8)],...
+         'aperture_deg',10,...
+         'fill_val',0,...
+         'outer_val',0,...
+         'noise_level',0,...
+         'dotRadius',[0.05,0.05],...
+         'dotDens',2,...
+         'colors',[255,0,128],...
+         'oversampling_ratio',8,...
+         'numTrials',20,...
+         'initial_fixation_time',500,...
+         'condition_duration',300,...
+         'stim_on_probe_duration',[0,0],...
+         'stim_on_duration',300,...
+         'response_duration',1500,...
+         'feedback_duration',500,...
+         'BetweenDuration',500,...
+         'bgcolor',[128,128,128],...
+         'fixsize',18,...
+         'fixlinesize',[9,2],...
+         'fixcolor',[255,255,255],...
+         'patch_size',[30,30],...
+         'patch_num',[20,40],...
+         'patch_color1',[255,255,255],...
+         'patch_color2',[0,0,0],...
+         'phototrg_size',[50,50],...
+         'phototrg_pos',[1280-25,-720+25],...
+         'phototrg_color',[255,255,255],...
+         'ipd',6.4,...
+         'pix_per_cm',57.1429,...
+         'vdist',65);
 
-  % load displayfile
-  run(fullfile(rootDir,'subjects',subjID,displayfile));
+% change unit from msec to sec.
+sparam.initial_fixation_time  = sparam.initial_fixation_time/1000;
+sparam.condition_duration     = sparam.condition_duration/1000;
+sparam.BetweenDuration        = sparam.BetweenDuration/1000;
+sparam.stim_on_probe_duration = sparam.stim_on_probe_duration./1000;
+sparam.stim_on_duration       = sparam.stim_on_duration/1000;
+sparam.response_duration      = sparam.response_duration/1000;
+sparam.feedback_duration      = sparam.feedback_duration/1000;
 
-else  % if useDisplayFile
-
-  % otherwise, set default variables
-
-  %%% display mode
-  % one of "mono", "dual", "dualparallel", "dualcross", "cross", "parallel", "redgreen", "greenred",
-  % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
-  dparam.ExpMode='dual';
-
-  dparam.scrID=1; % screen ID, generally 0 for a single display setup, 1 for dual display setup
-
-  %%% a method to start stimulus presentation
-  % 0:ENTER/SPACE, 1:Left-mouse button, 2:the first MR trigger pulse (CiNet),
-  % 3:waiting for a MR trigger pulse (BUIC) -- checking onset of pin #11 of the parallel port,
-  % or 4:custom key trigger (wait for a key input that you specify as tgt_key).
-  dparam.start_method=4;
-
-  %%% a pseudo trigger key from the MR scanner when it starts, only valid when dparam.start_method=4;
-  dparam.custom_trigger=KbName(84); % 't' is a default trigger code from MR scanner at CiNet
-
-  dparam.Key1=37; % 37 is left-arrow on default Windows
-  dparam.Key2=39; % 39 is right-arrow on default Windows
-
-  %%% screen settings
-
-  %%% whether displaying the stimuli in full-screen mode or as is (the precise resolution), true or false (true)
-  dparam.fullscr=false;
-
-  %%% the resolution of the screen height, integer (1024)
-  dparam.ScrHeight=1200; %1024; %1200;
-
-  %% the resolution of the screen width, integer (1280)
-  dparam.ScrWidth=1600; %1280; %1920;
-
-  % shift the screen center position along y-axis (to prevent the occlusion of the stimuli due to the coil)
-  dparam.yshift=30;
-
-end % if useDisplayFile
-
-% set stimulus parameters
-if useStimulusFile
-
-  % load stimulusfile
-  run(fullfile(rootDir,'subjects',subjID,stimulusfile));
-
-  % change unit from msec to sec.
-  sparam.initial_fixation_time=sparam.initial_fixation_time/1000;
-  sparam.condition_duration=sparam.condition_duration/1000;
-  sparam.BetweenDuration=sparam.BetweenDuration/1000;
-  sparam.stim_on_probe_duration=sparam.stim_on_probe_duration./1000;
-  sparam.stim_on_duration=sparam.stim_on_duration/1000;
-  sparam.response_duration=sparam.response_duration/1000;
-  sparam.feedback_duration=sparam.feedback_duration/1000;
-
-  sparam.stim_off_duration=sparam.condition_duration-sparam.stim_on_duration;
-
-else  % if useStimulusFile
-
-  % otherwise, set default variables
-
-  %%% stimulus presentation mode
-  sparam.binocular_display=true; % true or false. if false, only left-eye images are presented to both eyes (required just to measure the effect of monocular cues in RDS)
-  sparam.give_feedback=false;    % true or false. if true, feedback (whether the response is correct or not) is given
-  sparam.task_interval=4:6;      % frequency the depth discrimination task, the task occurs every sparam.task_interval trials
-
-  %%% target image generation
-  sparam.fieldSize=[12,12]; % target stimulus size in deg
-
-  % [Important notes on stimulus masks]
-  %
-  % * the parameters required to define stimulus masks
-  %
-  % sparam.mask_theta_deg  : a set of slopes of the slants to be used for masking. the outer regions of the intersections of all these slants' projections on the XY-axes are masked.
-  %                          for instance, if sparam.mask_orient_deg=[-22.5,-45], the -22.5 and -22.5 deg slants are first generated, their non-zero components are projected on the XY plane,
-  %                          and then a stimulus mask is generated in two ways.
-  %                          1. 'xy' mask: the intersection of the two projections are set to 1, while the oter regions are set to 1. The mask is used to restrict the spatial extensions
-  %                             of the target slants within the common spatial extent.
-  %                          2. 'z'  mask: the disparity range of the slants are restricted so that the maximum disparity values are the average of all disparities contained in all set of slants.
-  %                             using this mask, we can restrict the disparity range across the different angles of the slants.
-  % sparam.mask_orient_deg : tilt angles of a set of slopes of the slants. if multiple values are set, masks are generated separately for each element of sparam.mask_orient_deg.
-  %                          for instance, if sparam.mask_theta_deg=[-52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, 52.5]; and sparam.mask_orient_deg=[45, 90];, two masks are generated as below.
-  %                          1. -52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, and 52.5 deg slants tilted for 45 deg
-  %                          2. -52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, and 52.5 deg slants tilted for 90 deg
-  %
-  %
-  % * how to set masks for the main slant stimuli
-  %
-  % to set the masks to the main slant stimuli, please use sparam.mask_type and sparam.mask_orient_id.
-  % for details, please see the notes below.
-
-  % for generating a mask, which is defined as a common filed of all the slants tilted by sparam.mask_theta_deg below.
-  sparam.mask_theta_deg   = [-52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, 52.5]; % for masking, slopes of the slant stimuli in deg, orientation: right-upper-left
-  sparam.mask_orient_deg  = [0,45,90,135]; % for masking, tilted orientation of the slant in deg, from right horizontal meridian, CCW
-
-  % [Important notes on angles/orientations of the slants]
-  %
-  % * the parameters required to define stimulus conditions (slant stimuli)
-  %
-  % sparam.theta_deg      : angles of the slant, negative = top is near, a [1 x N (= #conditions)] matrix
-  % sparam.orient_deg     : tilted orientations of the slant in deg, a [1 x N (= #conditions)] matrix
-  % sparam.mask_type      : 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent, a [1 x N (= #conditions)] cell
-  % sparam.mask_orient_id : ID of the mask to be used, 1 = sparam.mask_orient_deg(1), 2 = sparam.mask_orient_deg(2), ...., a [1 x N (= #conditions)] matrix
-  %
-  %
-  % * the number of required slants in this experiment are: 8 slants X three mask types = 24.
-  %
-  % sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5];
-  % sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90];
-  % sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy',   'z',   'z',   'z',   'z',   'z',   'z',   'z',   'z'};
-  % sparam.mask_orient_id=[    1,      1,     1,     1,     1,     1,    1,      1,     1,     1,     1,     1,    1,      1,     1,     1,     1,     1,    1,      1,     1,     1,     1,     1];
-  %
-  % however, plese note that some slants are the same. for instance,
-  % (theta,orient,mask)=(-52.5, 90, 'n') is the same with (-52.5, 90,'xy')
-  % (theta,orient,mask)=( 52.5, 90, 'n') is the same with ( 52.5, 90,'xy')
-  % (theta,orient,mask)=( -7.5, 90, 'n') is the same with ( -7.5, 90, 'z')
-  % (theta,orient,mask)=(  7.5, 90, 'n') is the same with (  7.5, 90, 'z')
-  %
-  % therefore, the total number of slants we need to use is actually 20.
-  %
-  % sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
-  % sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
-  % sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
-
-  sparam.theta_deg    = [ -52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5,  52.5, -52.5, -37.5, -22.5,  22.5,  37.5,  52.5, -37.5, -22.5,  -7.5,   7.5,  22.5,  37.5]; % angle of the slant, negative = top is near
-  sparam.orient_deg   = [    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90,    90]; % tilted orientation of the slant in deg
-  sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'z',   'z',   'z',   'z',   'z',   'z',  'xy',  'xy',  'xy',  'xy',  'xy',  'xy'}; % 'n':no mask, 'z':common disparity among slants, 'xy':common spatial extent
-  sparam.mask_orient_id=[    1,      1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1]; % ID of the mask to be used, 1 = sparam.mask_orient_deg(1), 2 = sparam.mask_orient_deg(2), ...
-
-  sparam.theta_deg    = sparam.theta_deg(1:2:numel(sparam.theta_deg));
-  sparam.orient_deg   = sparam.orient_deg(1:2:numel(sparam.orient_deg));
-  sparam.mask_type    = sparam.mask_type(1:2:numel(sparam.mask_type));
-  sparam.mask_orient_id=sparam.mask_orient_id(1:2:numel(sparam.mask_orient_id));
-
-  sparam.aperture_deg = 10;   % size of circular aperture in deg
-  sparam.fill_val     = 0;   % value to fill the 'hole' of the circular aperture
-  sparam.outer_val    = 0;   % value to fill the outer region of slant field
-
-  %%% RDS parameters
-  sparam.noise_level=0;   % percentage of anti-correlated noise, [val]
-  sparam.dotRadius=[0.05,0.05]; % radius of RDS's white/black ovals, [row,col]
-  sparam.dotDens=2; % deinsity of dot in RDS image (1-100)
-  sparam.colors=[255,0,128]; % RDS colors [dot1,dot2,background](0-255)
-  sparam.oversampling_ratio=8; % oversampling_ratio for fine scale RDS images, [val]
-
-  % the number of trials per condition
-  sparam.numTrials=10;
-
-  %%% stimulus display durations etc in 'msec'
-  sparam.initial_fixation_time=0.500; % duration in msec for initial fixation, integer (msec)
-  sparam.condition_duration=1.300;   % duration in msec for each condition, integer (msec)
-  sparam.stim_on_probe_duration=[0.100,0.100]; % durations in msec for presenting a probe before the actual stimulus presentation (msec) [duration_of_red_fixation,duration_of_waiting]. if [0,0], the probe is ignored.
-  sparam.stim_on_duration=0.300;      % duration in msec for simulus ON period for each trial, integer (msec)
-  sparam.response_duration=1.500;    % duration in msec for response, integer (msec)
-  sparam.feedback_duration=0.500;     % duration in msec for correct/incorrect feedback, integer (msec)
-  sparam.BetweenDuration=1.000;      % duration in msec between trials, integer (msec)
-
-  sparam.stim_off_duration=sparam.condition_duration-sparam.stim_on_duration;
-
-  %%% fixation size and color
-  sparam.fixsize=18;        % the whole size (a circular hole) of the fixation cross in pixel
-  sparam.fixlinesize=[9,2]; % [height,width] of the fixation line in pixel
-  sparam.fixcolor=[255,255,255];
-
-  %%% RGB for background patches
-  sparam.patch_size=[30,30]; % background patch size, [height,width] in pixels
-  sparam.patch_num=[20,40];  % the number of background patches along vertical and horizontal axis
-  sparam.patch_color1=[255,255,255];
-  sparam.patch_color2=[0,0,0];
-
-  %%% size of the punch stimulus (rectangle) for signaling to the photo diode (photo trigger)
-  sparam.phototrg_size=[50,50];        % size of the photo-trigger patch in pixels
-  sparam.phototrg_pos=[1280-25,-720+25]; % the center position (row,col) of the photo-trigger patch in pixels
-  sparam.phototrg_color=[255,255,255]; % RGB color of the photo-trigger patch.
-
-  %%% viewing parameters
-  %run(fullfile(fileparts(mfilename('fullpath')),'sizeparams'));
-  sparam.ipd=6.4;
-  sparam.pix_per_cm=57.1429;
-  sparam.vdist=65;
-
-end % if useStimulusFile
+sparam.stim_off_duration=sparam.condition_duration-sparam.stim_on_duration;
 
 % set the other parameters
 dparam.RunScript=mfilename();
@@ -620,7 +476,11 @@ end
 % set the number of conditions
 sparam.numConds=numel(sparam.theta_deg);
 
-% displaying the Presentation Parameters
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Displaying the presentation parameters you set
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 disp('The Presentation Parameters are as below.');
 fprintf('\n');
 disp('************************************************');
@@ -685,6 +545,18 @@ condition_ID_holder=(1:size(design,1))';
 
 % to store numbers of the current trials
 trial_counter=zeros(size(design,1),1);
+
+% set task_interval which specifies task interval and timing
+task_interval=[];
+while numel(find(task_interval==0))<sparam.numTrials*sparam.numConds
+  tmp=shuffle(sparam.task_interval);
+  task_interval=[task_interval,zeros(1,tmp(1)-1),1];
+end
+clear tmp;
+
+% set jitter_duration which are added to tBetweenTrial to jitter stimulus presentation timing)
+% (100*randi(3,1)-100)/1000 is random jitter of duration [0-200,100ms steps]
+jitter_duration=(100*randi(3,[1,numel(task_interval)])-100)/1000;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -792,6 +664,12 @@ sparam.cm_per_pix=1/sparam.pix_per_cm;
 
 % pixles per degree
 sparam.pix_per_deg=round( 1/( 180*atan(sparam.cm_per_pix/sparam.vdist)/pi ) );
+
+% sound sources for feedback correct/incorrect
+if sparam.give_feedback
+  beep_correct=sin(2*pi*0.2*(0:900));
+  beep_incorrect=sin(2*pi*0.012*(0:900));
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1158,10 +1036,11 @@ end
 
 tBetweenTrial=GetSecs();
 stimulus_order=[];
-task_counter=0;
-task_interval=shuffle(sparam.task_interval);
-task_interval=task_interval(1);
+currenttrial=0;
 while ~isempty(condition_ID_holder)
+
+  % update counters
+  currenttrial=currenttrial+1;
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Stimulus generation
@@ -1175,9 +1054,7 @@ while ~isempty(condition_ID_holder)
   theta_deg=design(stimID,1);
   orient_deg=design(stimID,2);
 
-  task_counter=task_counter+1; % count the task interval
-
-  if task_counter~=task_interval
+  if ~task_interval(currenttrial)
     trial_counter(stimID)=trial_counter(stimID)+1; % update the #trial per condition
     stimulus_order=[stimulus_order,stimID]; %#ok
   end
@@ -1235,7 +1112,7 @@ while ~isempty(condition_ID_holder)
   end
 
   % wait for the BetweenDuration with some jitters
-  tBetweenTrial=tBetweenTrial+sparam.BetweenDuration+(100*randi(3,1)-100)/1000; % (100*randi(3,1)-100)/1000 is for adding a random jitter in duration [0-200,100ms steps]
+  tBetweenTrial=tBetweenTrial+sparam.BetweenDuration+jitter_duration(currenttrial);
   while GetSecs()<tBetweenTrial, [resps,event]=resps.check_responses(event); end
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1245,7 +1122,7 @@ while ~isempty(condition_ID_holder)
   tStimulation=GetSecs(); % current time
 
   %% log/display the stimulus parameters
-  if task_counter~=task_interval
+  if ~task_interval(currenttrial)
     event=event.add_event('Start block',['ID_',num2str(stimID),'_theta_',num2str(theta_deg),'_orient_',num2str(orient_deg),...
                           '_trials_',num2str(trial_counter(stimID),'%03d')]);
     fprintf('STIM ID:%02d, THETA:% 3.2f, ORIENTATION:% 3d, TRIALS:%03d\n',stimID,theta_deg,orient_deg,trial_counter(stimID));
@@ -1293,7 +1170,7 @@ while ~isempty(condition_ID_holder)
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
     Screen('DrawTexture',winPtr,stim{nn},[],CenterRect(stimRect,winRect)+yshift);
-    if task_counter~=task_interval
+    if ~task_interval(currenttrial)
       Screen('DrawTexture',winPtr,fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
       Screen('DrawTexture',winPtr,trg{nn},[],CenterRect(trgRect,winRect)+repmat(sparam.phototrg_pos,[1,2])+yshift);
     else
@@ -1313,7 +1190,7 @@ while ~isempty(condition_ID_holder)
   for nn=1:1:nScr
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
-    if task_counter~=task_interval
+    if ~task_interval(currenttrial)
       Screen('DrawTexture',winPtr,fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
     else
       Screen('DrawTexture',winPtr,task_fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
@@ -1328,7 +1205,7 @@ while ~isempty(condition_ID_holder)
   while GetSecs()<tStimulation, [resps,event]=resps.check_responses(event); end
 
   %% get observer response
-  if task_counter==task_interval
+  if task_interval(currenttrial)
 
     tResponse=GetSecs();
 
@@ -1393,7 +1270,7 @@ while ~isempty(condition_ID_holder)
       while GetSecs()<tFeedback, [resps,event]=resps.check_responses(event); end
     end % if sparam.give_feedback
 
-  end % if task_counter==task_interval
+  end % if task_interval(currenttrial)
 
   %% back to the default view and wait for dparam.BetweenDuration (duration between trials)
 
@@ -1415,19 +1292,13 @@ while ~isempty(condition_ID_holder)
   % delete finished condition from condition_ID_holder
   if trial_counter(stimID)==sparam.numTrials, condition_ID_holder(condition_ID_holder==stimID)=[]; end
 
-  % refresh the task counter
-  if task_counter==task_interval
-    task_interval=shuffle(sparam.task_interval);
-    task_interval=task_interval(1);
-    task_counter=0;
-  end
-
   % the last interval, waiting for the BetweenDuration
   if isempty(condition_ID_holder)
-    tBetweenTrial=tBetweenTrial+sparam.BetweenDuration+(100*randi(3,1)-100)/1000; % (100*randi(3,1)-100)/1000 is random jitter of duration [0-200,100ms steps]
+    tBetweenTrial=tBetweenTrial+sparam.BetweenDuration+jitter_duration(currenttrial);
     while GetSecs()<tBetweenTrial, [resps,event]=resps.check_responses(event); end
   end
-end % ~isempty(condition_ID_holder)
+
+end % while ~isempty(condition_ID_holder)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
