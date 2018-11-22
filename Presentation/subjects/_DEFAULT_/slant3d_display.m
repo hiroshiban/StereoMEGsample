@@ -4,7 +4,7 @@
 % SlantfMRI.m
 %
 % Created    : "2018-09-26 18:57:59 ban"
-% Last Update: "2018-10-14 16:29:11 ban"
+% Last Update: "2018-11-22 20:16:18 ban"
 % ************************************************************
 
 % "dparam" means "display-setting parameters"
@@ -41,3 +41,6 @@ dparam.ScrWidth=2560; %1280; %1920;
 
 % shift the screen center position along y-axis (to prevent the occlusion of the stimuli due to the coil)
 dparam.yshift=0;
+
+% whther skipping the PTB's vertical-sync signal test. if 1, the sync test is skipped
+dparam.skip_sync_test=0;

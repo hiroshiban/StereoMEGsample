@@ -4,7 +4,7 @@
 % Oblique3D_QUEST.m
 %
 % Created    : "2018-10-09 15:47:27 ban"
-% Last Update: "2018-10-30 09:28:15 ban"
+% Last Update: "2018-11-15 14:12:21 ban"
 % ************************************************************
 
 % "sparam" means "stimulus generation parameters"
@@ -116,7 +116,7 @@ sparam.patch_color2=[0,0,0];
 
 %%% size of the punch stimulus (rectangle) for signaling to the photo diode (photo trigger)
 sparam.phototrg_size=[50,50];        % size of the photo-trigger patch in pixels
-sparam.phototrg_pos=[1280-25,-720+25]; % the center position (row,col) of the photo-trigger patch in pixels
+sparam.phototrg_pos=[1280/2-25,-1024/2+25]; % the center position (x,y) of the photo-trigger patch in pixels
 sparam.phototrg_color=[255,255,255]; % RGB color of the photo-trigger patch.
 
 %%% viewing parameters
