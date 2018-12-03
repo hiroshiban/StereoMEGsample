@@ -23,7 +23,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-11-22 20:16:58 ban"
+% Last Update: "2018-12-03 11:39:30 ban"
 %
 %
 % [input variables]
@@ -998,7 +998,7 @@ event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',dates
 
 % waiting for stimulus presentation
 resps.wait_stimulus_presentation(dparam.start_method,dparam.custom_trigger);
-PlaySound(1);
+%PlaySound(1);
 fprintf('\nExperiment running...\n');
 
 
