@@ -23,7 +23,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-12-03 11:39:30 ban"
+% Last Update: "2018-12-20 11:29:43 ban"
 %
 %
 % [input variables]
@@ -1135,7 +1135,7 @@ while ~isempty(condition_ID_holder)
 
   %% display a probe (a red fixation) before presenting the stimulus
   if sparam.stim_on_probe_duration(1)~=0
-    event=event.add_event('Probe',\n
+    event=event.add_event('Probe',[]);
     for nn=1:1:nScr
       Screen('SelectStereoDrawBuffer',winPtr,nn-1);
       Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
@@ -1166,7 +1166,7 @@ while ~isempty(condition_ID_holder)
   end
 
   %% stimulus ON
-  event=event.add_event('Stimulus on',\n
+  event=event.add_event('Stimulus on',[]);
   for nn=1:1:nScr
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
@@ -1187,7 +1187,7 @@ while ~isempty(condition_ID_holder)
   while GetSecs()<tStimulation, [resps,event]=resps.check_responses(event); end
 
   %% stimulus OFF
-  event=event.add_event('Stimulus off',\n
+  event=event.add_event('Stimulus off',[]);
   for nn=1:1:nScr
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
@@ -1211,7 +1211,7 @@ while ~isempty(condition_ID_holder)
     tResponse=GetSecs();
 
     % display response cue
-    event=event.add_event('Waiting for response',\n
+    event=event.add_event('Waiting for response',[]);
     for nn=1:1:nScr
       Screen('SelectStereoDrawBuffer',winPtr,nn-1);
       Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
