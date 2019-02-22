@@ -4,7 +4,7 @@
 % SlantfMRI.m
 %
 % Created    : "2018-09-26 18:57:59 ban"
-% Last Update: "2018-11-22 20:16:18 ban"
+% Last Update: "2019-02-19 19:08:12 ban"
 % ************************************************************
 
 % "dparam" means "display-setting parameters"
@@ -12,7 +12,7 @@
 %%% display mode
 % one of "mono", "dual", "dualparallel", "dualcross", "cross", "parallel", "redgreen", "greenred",
 % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
-dparam.ExpMode='shutter';
+dparam.ExpMode='dualparallel';
 
 dparam.scrID=1; % screen ID, generally 0 for a single display setup, 1 for dual display setup
 

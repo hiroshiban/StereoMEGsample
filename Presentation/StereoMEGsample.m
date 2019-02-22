@@ -23,7 +23,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2018-12-20 11:29:43 ban"
+% Last Update: "2019-02-22 13:39:12 ban"
 %
 %
 % [input variables]
@@ -67,7 +67,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % [output files]
 % 1. behavioral result
 %    stored ./subjects/(subjID)/results/(today)
-%    as ./subjects/(subjID)/results/(today)/(subjID)_StereoMEGsample_results_run_(run_num).mat
+%    as ./subjects/(subjID)/results/(today)/(subjID)_Slant3D_MEG_results_run_(run_num).mat
 %
 %
 % [example]
@@ -350,7 +350,7 @@ if ~exist(resultDir,'dir'), mkdir(resultDir); end
 % record the output window
 logfname=fullfile(resultDir,[num2str(subjID),sprintf('_%s_run_',mfilename()),num2str(acq,'%02d'),'.log']);
 diary(logfname);
-warning off; %#ok warning('off','MATLAB:dispatcher:InexactCaseMatch');
+warning off; %warning('off','MATLAB:dispatcher:InexactCaseMatch');
 
 
 %%%%% try & catch %%%%%
@@ -517,7 +517,7 @@ fprintf('Please carefully check before proceeding.\n\n');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Creating stimulus presentation protocol, a design structure, and QUEST data structure
+%%%% Creating stimulus presentation protocol, a design structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Variables described below are for storing participant behaviors
@@ -532,31 +532,39 @@ fprintf('Please carefully check before proceeding.\n\n');
 design=zeros(numel(sparam.theta_deg),2);
 for ii=1:1:numel(sparam.theta_deg), design(ii,:)=[sparam.theta_deg(ii),sparam.orient_deg(ii)]; end
 
-% % delete conditions with theta_deg==0, orient_deg~=0 since the stimuli are completely same
-% % when the theta_deg==0
-% idx=logical(design(:,1)==0 & design(:,2)~=0);
-% if numel(find(idx==1))~=1, design(idx(2:end),:)=[]; end
+% create stimulus presentation array (sequence)
+if numel(sparam.numConds)>=4
+  tmp_stimulus_order=GenerateRandomDesignSequence(sparam.numConds,sparam.numTrials,2,0,1)';
+elseif numel(sparam.numConds)<=2
+  tmp_stimulus_order=GenerateRandomDesignSequence(sparam.numConds,sparam.numTrials,0,0,0)';
+else
+  tmp_stimulus_order=GenerateRandomDesignSequence(sparam.numConds,sparam.numTrials,1,0,1)';
+end
+tmp_stimulus_order=tmp_stimulus_order';
 
-%% Variables described below are tempral ones.
-
-% stimulus IDs
-% The ID array is modified during stimulus presentation and deleted after the measurements
-condition_ID_holder=(1:size(design,1))';
+% insert the task conditions with some intervals which are specified by sparam.task_interval
+% and generate the true stimulus presentation order array
+% note: stimulus_order=[stimulus_conditions;[an array of stimulus_no_task(0) and task(1)]]
+stimulus_order=[];
+while ~isempty(tmp_stimulus_order)
+  task_interval=shuffle(sparam.task_interval); task_interval=task_interval(1)-1;
+  task_stimulus=shuffle(1:sparam.numConds); task_stimulus=task_stimulus(1);
+  stimulus_order=[stimulus_order,...
+                  [tmp_stimulus_order(1:min(task_interval,numel(tmp_stimulus_order)));...
+                   zeros(1,numel(1:min(task_interval,numel(tmp_stimulus_order))))],...
+                  [task_stimulus;1]]; %#ok
+  tmp_stimulus_order(1:min(task_interval,numel(tmp_stimulus_order)))=[];
+end
+clear tmp_stimulus_order task_interval task_stimulus;
+if stimulus_order(2,end)==1, stimulus_order=stimulus_order(:,1:end-1); end % cut the final task if no stimulus condition is found after it
 
 % to store numbers of the current trials
 trial_counter=zeros(size(design,1),1);
-
-% set task_interval which specifies task interval and timing
-task_interval=[];
-while numel(find(task_interval==0))<sparam.numTrials*sparam.numConds
-  tmp=shuffle(sparam.task_interval);
-  task_interval=[task_interval,zeros(1,tmp(1)-1),1];
-end
-clear tmp;
+task_counter=0;
 
 % set jitter_duration which are added to tBetweenTrial to jitter stimulus presentation timing)
 % (100*randi(3,1)-100)/1000 is random jitter of duration [0-200,100ms steps]
-jitter_duration=(100*randi(3,[1,numel(task_interval)])-100)/1000;
+jitter_duration=(100*randi(3,[1,size(stimulus_order,2)])-100)/1000;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -664,12 +672,6 @@ sparam.cm_per_pix=1/sparam.pix_per_cm;
 % pixles per degree
 sparam.pix_per_deg=round( 1/( 180*atan(sparam.cm_per_pix/sparam.vdist)/pi ) );
 
-% sound sources for feedback correct/incorrect
-if sparam.give_feedback
-  beep_correct=sin(2*pi*0.2*(0:900));
-  beep_incorrect=sin(2*pi*0.012*(0:900));
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Initializing height fields & image shifts by binocular disparities
@@ -739,7 +741,7 @@ dotalpha=basedot(:,:,4)./max(max(basedot(:,:,4))); % get alpha channel value 0-1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Debug codes
-%%%% just to save each images as *.png format files.
+%%%% saving the stimulus images as *.png format files and enter the debug (keyboard) mode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % %%%%%% DEBUG codes start here. The codes below are just to get stimulus images and check the dparam and sparam parameters
@@ -796,7 +798,7 @@ if strfind(upper(subjID),'DEBUG')
   end % for ii=1:1:size(design,1)
 
   % save stimuli as *.mat
-  save_dir=fullfile(pwd,'images');
+  save_dir=fullfile(resultDir,'images');
   if ~exist(save_dir,'dir'), mkdir(save_dir); end
   save(fullfile(save_dir,'oblique3D_stimuli.mat'),'design','dparam','sparam','imgL','imgR','posL','posR','wdot','bdot','dotalpha');
 
@@ -806,29 +808,17 @@ if strfind(upper(subjID),'DEBUG')
     % save generated figures as png
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       M = [imgL{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgL{ii}];
-      % im_h = imagesc(M,[0 255]);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % colormap(gray);
-      % shg;
     else
       M=reshape([imgL{ii},imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii}))],[size(imgL{ii}),3]); % RGB;
-      % im_h = imagesc(M);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % shg;
     end
 
     figure; hold on;
-    imfig=imshow(M,[0,255]);
+    imshow(M,[0,255]);
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       fname=sprintf('oblique3D_cond%03d_theta%.2f_ori%.2f.png',ii,design(ii,1),design(ii,2));
     else
       fname=sprintf('oblique3D_red_green_cond%03d_theta%.2f_ori%.2f.png',ii,design(ii,1),design(ii,2));
     end
-    %saveas(imfig,[save_dir,filesep(),fname,'.png'],'png');
     imwrite(M,[save_dir,filesep(),fname,'.png'],'png');
 
   end % for ii=1:1:size(design,1)
@@ -991,7 +981,7 @@ Screen('Flip', winPtr,[],[],[],1);
 
 % add time stamp (this also works to load add_event method in memory in advance of the actual displays)
 fprintf('\nWaiting for the start...\n');
-event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',datestr(now,'HH:mm:ss')]),GetSecs());
+event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',datestr(now,'HH:mm:ss')]),NaN);
 
 % waiting for stimulus presentation
 resps.wait_stimulus_presentation(dparam.start_method,dparam.custom_trigger);
@@ -1036,28 +1026,24 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tBetweenTrial=GetSecs();
-stimulus_order=[];
-currenttrial=0;
-while ~isempty(condition_ID_holder)
-
-  % update counters
-  currenttrial=currenttrial+1;
+for currenttrial=1:1:size(stimulus_order,2)
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Stimulus generation
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % get the current stimulus ID
-  tmp=shuffle(condition_ID_holder);
-  stimID=tmp(1);
+  stimID=stimulus_order(1,currenttrial);
 
   % set the current stimulus parameters
   theta_deg=design(stimID,1);
   orient_deg=design(stimID,2);
 
-  if ~task_interval(currenttrial)
-    trial_counter(stimID)=trial_counter(stimID)+1; % update the #trial per condition
-    stimulus_order=[stimulus_order,stimID]; %#ok
+  % update the #trial per condition
+  if ~stimulus_order(2,currenttrial)
+    trial_counter(stimID)=trial_counter(stimID)+1;
+  else
+    task_counter=task_counter+1;
   end
 
   %jitter=shuffle(-2:2); jitter=jitter(1);
@@ -1123,13 +1109,13 @@ while ~isempty(condition_ID_holder)
   tStimulation=GetSecs(); % current time
 
   %% log/display the stimulus parameters
-  if ~task_interval(currenttrial)
+  if ~stimulus_order(2,currenttrial)
     event=event.add_event('Start block',['ID_',num2str(stimID),'_theta_',num2str(theta_deg),'_orient_',num2str(orient_deg),...
                           '_trials_',num2str(trial_counter(stimID),'%03d')]);
     fprintf('STIM ID:%02d, THETA:% 3.2f, ORIENTATION:% 3d, TRIALS:%03d\n',stimID,theta_deg,orient_deg,trial_counter(stimID));
   else
     event=event.add_event('Task block',['ID_',num2str(stimID),'_theta_',num2str(theta_deg),'_orient_',num2str(orient_deg),...
-                          '_trials_',num2str(trial_counter(stimID),'%03d')]);
+                          '_trials_',num2str(task_counter,'%03d')]);
     fprintf('TASK ID:%02d, THETA:% 3.2f, ORIENTATION:% 3d\n',stimID,theta_deg,orient_deg);
   end
 
@@ -1171,7 +1157,7 @@ while ~isempty(condition_ID_holder)
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
     Screen('DrawTexture',winPtr,stim{nn},[],CenterRect(stimRect,winRect)+yshift);
-    if ~task_interval(currenttrial)
+    if ~stimulus_order(2,currenttrial)
       Screen('DrawTexture',winPtr,fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
       Screen('DrawTexture',winPtr,trg{nn},[],CenterRect(trgRect,winRect)+repmat(sparam.phototrg_pos,[1,2])+yshift);
     else
@@ -1191,7 +1177,7 @@ while ~isempty(condition_ID_holder)
   for nn=1:1:nScr
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect)+yshift);
-    if ~task_interval(currenttrial)
+    if ~stimulus_order(2,currenttrial)
       Screen('DrawTexture',winPtr,fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
     else
       Screen('DrawTexture',winPtr,task_fcross{nn},[],CenterRect(fixRect,winRect)+yshift);
@@ -1206,7 +1192,7 @@ while ~isempty(condition_ID_holder)
   while GetSecs()<tStimulation, [resps,event]=resps.check_responses(event); end
 
   %% get observer response
-  if task_interval(currenttrial)
+  if stimulus_order(2,currenttrial)
 
     tResponse=GetSecs();
 
@@ -1271,7 +1257,7 @@ while ~isempty(condition_ID_holder)
       while GetSecs()<tFeedback, [resps,event]=resps.check_responses(event); end
     end % if sparam.give_feedback
 
-  end % if task_interval(currenttrial)
+  end % if stimulus_order(2,currenttrial)
 
   %% back to the default view and wait for dparam.BetweenDuration (duration between trials)
 
@@ -1290,16 +1276,13 @@ while ~isempty(condition_ID_holder)
   % garbage collections, clean up the current texture & release memory
   for nn=1:1:nScr, Screen('Close',stim{nn}); end
 
-  % delete finished condition from condition_ID_holder
-  if trial_counter(stimID)==sparam.numTrials, condition_ID_holder(condition_ID_holder==stimID)=[]; end
-
   % the last interval, waiting for the BetweenDuration
-  if isempty(condition_ID_holder)
+  if currenttrial==size(stimulus_order,2)
     tBetweenTrial=tBetweenTrial+sparam.BetweenDuration+jitter_duration(currenttrial);
     while GetSecs()<tBetweenTrial, [resps,event]=resps.check_responses(event); end
   end
 
-end % while ~isempty(condition_ID_holder)
+end % for currenttrial=1:1:size(stimulus_order,2)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1319,6 +1302,8 @@ disp(' ');
 
 % saving the results
 fprintf('saving data...');
+
+stimulus_order=stimulus_order(1,stimulus_order(2,:)==0); %#ok refine the stimulus order
 
 savefname=fullfile(resultDir,[num2str(subjID),sprintf('_%s_run_',mfilename()),num2str(acq,'%02d'),'.mat']);
 eval(sprintf('save -append %s event stimulus_order;',savefname));
@@ -1369,8 +1354,6 @@ catch %#ok
   rmpath(genpath(fullfile(rootDir,'..','Common')));
   rmpath(fullfile(rootDir,'..','gamma_table'));
   rmpath(fullfile(rootDir,'..','Generation'));
-  %psychrethrow(psychlasterror);
-  close all; clear global; clear mex; clear all;
   return
 end % try..catch
 
