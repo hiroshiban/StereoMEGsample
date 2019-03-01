@@ -28,7 +28,7 @@ function OK=run_exp(subj,exp_id,acq_id)
 %           without any error [true/false]
 %
 % Created    : "2018-09-27 11:47:05 ban"
-% Last Update: "2018-10-31 11:03:04 ban"
+% Last Update: "2019-03-01 15:15:29 ban"
 
 % check the input variables
 if nargin<3, help(mfilename()); return; end
@@ -49,7 +49,7 @@ if length(exp_id)~=numel(acq_id), error('the numbers of exp_mode and acq_id mism
 % if the subj directory is not found, create subj directory, copy all condition
 % files from DEFAULT and then run the script using DEFAULT parameters
 
-subj_dir=fullfile(pwd,'subjects',subj);
+subj_dir=fullfile(fileparts(mfilename('fullpath')),'subjects',subj);
 if ~exist(subj_dir,'dir')
 
   disp('The subject directory was not found.');
@@ -70,7 +70,7 @@ if ~exist(subj_dir,'dir')
   end
 
   %mkdir(subj_dir);
-  copyfile(fullfile(pwd,'subjects','_DEFAULT_'),subj_dir);
+  copyfile(fullfile(fileparts(mfilename('fullpath')),'subjects','_DEFAULT_'),subj_dir);
 end
 
 % set display and stimulus file name
