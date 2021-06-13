@@ -3,6 +3,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % function StereoMEGsample(subjID,acq,:displayfile,:stimlusfile,:gamma_table,:overwrite_flg,:force_proceed_flag)
 % (: is optional)
 %
+% - This is a sample MATLAB Psychtoolbox-3 (PTB3) script for MEG experiment on 3D vision.
 % - Displays 3D slant consisted of Random-Dot-Stereogram (RDS) with horizontal
 %   binocular disparities.
 % - Used for psychophysical measurementss of perceptual oblique effects in 3D scene.
@@ -23,7 +24,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2021-06-10 01:36:09 ban"
+% Last Update: "2021-06-13 21:59:06 ban"
 %
 %
 % [input variables]
