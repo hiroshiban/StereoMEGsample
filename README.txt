@@ -2,7 +2,7 @@
 About Slant 3D experiment
 
 Created    : "2018-10-04 15:21:12 ban"
-Last Update: "2021-06-13 22:00:31 ban"
+Last Update: "2021-06-13 22:09:06 ban"
 ****************************************
 
 - This is a sample MATLAB Psychtoolbox-3 (PTB3) script for MEG experiment on 3D vision.
@@ -24,6 +24,16 @@ Last Update: "2021-06-13 22:00:31 ban"
   offline based on the photo-trigger signals recorded at the upper-right corner
   of the display in the MEG room.
 
+[how to run the script]
+1. On the MATLAB shell, please change the working directory to
+   ~/StereoMEGsample/Presentation/
+2. Run the "run_exp" script
+   >> run_exp('subj_name',1);
+   Here, the first input variable is subject name or ID, such as 'HB' or 's01',
+   the second variable should be 1 or 2,
+
+For more details, please see the documents in StereoMEGsample.m
+Also please see the parameter files in ~/StereoMEGsample/Presentation/subj/_DEFAULT_
 
 [input variables]
 sujID         : ID of subject, string, such as 'HB', 's01', etc.

@@ -22,9 +22,17 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %   offline based on the photo-trigger signals recorded at the upper-right corner
 %   of the display in the MEG room.
 %
+% [how to run the script]
+% 1. On the MATLAB shell, please change the working directory to
+%    ~/StereoMEGsample/Presentation/
+% 2. Run the "run_exp" script
+%    >> run_exp('subj_name',1);
+%    Here, the first input variable is subject name or ID, such as 'HB' or 's01',
+%    the second variable should be 1 or 2,
+%
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2021-06-13 21:59:06 ban"
+% Last Update: "2021-06-13 22:09:28 ban"
 %
 %
 % [input variables]
