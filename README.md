@@ -1,8 +1,7 @@
-
 # **README on StereoMEGsample**
 
 <div>Created    : "2018-10-04 15:21:12 ban"</div>
-<div>Last Update: "2021-12-07 17:17:14 ban"
+<div>Last Update: "2021-12-08 05:23:42 ban"
 
 **********
 
@@ -11,14 +10,14 @@
 
 ![StereoMEGsample](imgs/StereoMEGsample.png)  
 
-**Sample stimulus presentation codes for stereo vision fMRI experiment (Block design) in our research group**  
+**Sample stimulus presentation codes for stereo vision MEG experiment (Block design) in our research group**  
 
 - This package contains a set of sample **MATLAB and Psychtoolbox-3 (PTB3)** scripts for a A-or-B-task MEG experiment on 3D vision.
 - It displays tilted circular stimuli defined by binocular disparities.
 - The tilted circles are rendered as the standard random-dot-stereogram (RDS) images.
 - This script should be run with MATLAB PTB3 ver 3.0.15 or above (not tested with pervious versions of PTB3 and PTB2).
 - Please note that, in general, if we use PTB3, RDS stimuli can be easily generated with Screen('DrawDots') function. However, the dots generated with the simple PTB3 function are not antialiased, which may cause some problem due to round-offs of the fine depth structures. Therefore, in this function, I am taking a different strategy to generate RDSs by putting antialiased (Gaussian-smoothed) dots with alpha-channel (transparency) setups and by oversampling the position shift (horizontal binocular disparity). That is why the stimulus generation pipeline in this function is a bit complicated. If you don't care such the antialiased matter at all, the script can be made more concise and much simpler. Maybe there's a better way...
-- ***Finally, this package is made publicly available in the hope of keeping our research group being transparent and open. Furthermore, the package is made open also for people who are interested in our group's research activities, who want to join our group in the near future, and who want to learn how to create stereo stimuli for vision science.*** To these ends, I have tried to make the samples as simple as possible (but also as real as possible so as to be available in the real experiments in the form of what this package is) with omitting any kinds of hacking-like codes to compensate stimulus presentation timings etc. If you need such routines, please check the other stimulus presentation codes in my [**Retinotopy**](https://github.com/hiroshiban/retinotopy) repository etc.)
+- ***Finally, this package is made publicly available in the hope of keeping our research group being transparent and open. Furthermore, the package is made open also for people who want to know our group's research activities, who want to join our group in the near future, and who want to learn how to create stereo stimuli for vision science. If you are interested in our research projects, please feel free to contact us.*** Anyway, to these ends, I have tried to make the samples as simple as possible (but also as real as possible so as to be available in the real experiments in the form of what this package is) with omitting any kinds of hacking-like codes to compensate stimulus presentation timings etc. If you need such routines, please check the other stimulus presentation codes in my [**Retinotopy**](https://github.com/hiroshiban/retinotopy) repository etc.).
 
 (Matlab is a registered trademark of [***The Mathworks Inc.*** ](https://www.mathworks.com/) )  
 
@@ -31,9 +30,10 @@ The presentation will start by pressing the start button you defined as sparam.s
 &nbsp;&nbsp; ***stim 1(1000ms) -- blank(1000ms) -- (task) -- between trial duration (1000-1500ms, jittered) --***  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ***stim 2(1000ms) -- blank(1000ms) -- (task) -- between trial duration (1000-1500ms, jittered) --...(continued)...***  
 
-After each of the stimulus presentations, participants are asked to discriminate which direction the target slant stimulus is tilted; they are asked to press
+After each of the stimulus presentations, participants are asked to discriminate which direction the target slant stimulus is tilted; they are requested to press
   - key1 when the stimulus top side is to near (top-near)  
   - key2 when the stimulus top side is to far (top-far)  
+    NOTE: Key 1 and key 2 are defined in the display parameter file.  
 
 For more details, please read the descriptions below.  
 Also please check the header comments in ~/StereoMEGsample/Presentation/StereoMEGsample.m.  
@@ -49,7 +49,7 @@ The codes here were partly made from the scripts I used in my previous fMRI (not
 
 ## **Acknowledgment**
 
-The StereoMEGsample package uses **Psychtoolboox** library for generating/presenting/controlling binocular disparity stimuli. We would like to express our sincere gratitude to the authors for sharing these great tools.  
+The StereoMEGsample package uses **Psychtoolboox** library for generating/presenting/controlling binocular disparity stimuli. We would like to express our sincere gratitude to the authors for sharing the great toolbox.  
 
 **Psychtoolbox** : The individual Psychtoolbox core developers,  
             (c) 1996-2011, David Brainard  
@@ -72,7 +72,7 @@ The StereoMEGsample package uses **Psychtoolboox** library for generating/presen
    >> run_exp('subj_name',exp_id,acq_id);
    ````
 
-   Here, 'run_exp' is a simple script that calls the main StereoMEGsample function. The first input variable is subject name or ID, such as 'HB' or 's01'. The second variable should be 0 (for practice) or 1,2,3,.. (main experiment). Please prepare individual stimulus_files for each of your experiment conditions and save them like stim_fname=sprintf('oblique3d_stimulus_%02d',exp_id);. Then, by specifying the experiment condition by exp_id, you can run all the required experiment from this script. Multiple numbers (array) can be accepted. The third variable is run number, 1,2,3,...  
+   Here, 'run_exp' is a simple script that calls the main StereoMEGsample function. The first input variable is subject name or ID, such as 'HB' or 's01'. The second variable should be 0 (for practice) or 1,2,3,.. (main experiment). Please prepare a stimulus_file for each of your experiment conditions and save it like stim_fname=sprintf('slant_stimulus_%02d',exp_id);. Then, by specifying the experiment condition by exp_id, you can run all the required experiment from this script. Multiple numbers (array) can be accepted. The third variable is run number, 1,2,3,...  
 
 For more details, please see the header comments in *StereoMEGsample.m*  
 Also please see the parameter files in *~/StereoMEGsample/Presentation/subj/_DEFAULT_/*.  
@@ -92,7 +92,7 @@ function StereoMEGsample(subjID,acq,:displayfile,:stimlusfile,:gamma_table,:over
 ## **Example**
 
 ```Matlab
->> StereoMEGsample('s01',1,'oblique3d_display.m','oblique3d_stimulus_exp1.m')
+>> StereoMEGsample('s01',1,'slant_display.m','slant_stimulus_exp1.m')
 ```
 
 
@@ -104,7 +104,7 @@ sujID         : ID of subject, string, such as 'HB', 's01', etc.
                 !!! if 'debug' (case insensitive) is included          !!!
                 !!! in subjID string, this program runs as DEBUG mode; !!!
                 !!! stimulus images are saved as *.png format at       !!!
-                !!! ~/CurvatureShading/Presentation/images             !!!
+                !!! ~/StereoMEGsample/Presentation/images              !!!
                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
 acq           : acquisition number (design file number),
                 an integer, such as 1, 2, 3, ...
@@ -127,8 +127,8 @@ overwrite_flg : (optional) whether overwriting pre-existing result file. if 1, t
                 file with the same acquisition number will be overwritten by the previous one.
                 if 0, the existing file will be backed-up by adding a prefix '_old' at the tail
                 of the file. 0 by default.
-force_proceed_flag : (optional) whether proceeding stimulus presentatin without waiting for
-                the experimenter response (e.g. presesing the ENTER key) or a trigger.
+force_proceed_flag : (optional) whether proceeding stimulus presentation without waiting for
+                the experimenter response (e.g. pressing the ENTER key) or a trigger.
                 if 1, the stimulus presentation will be automatically carried on.
 
 
@@ -159,7 +159,7 @@ An example of "displayfile":
 % Please change the parameters below for your own setups.
 %
 % Created    : "2018-09-26 18:57:59 ban"
-% Last Update: "2021-12-07 17:17:14 ban"
+% Last Update: "2021-12-08 04:50:32 ban"
 % ************************************************************
 
 % "dparam" means "display-setting parameters"
@@ -349,22 +349,22 @@ sparam.mask_type    = {   'n',   'n',   'n',   'n',   'n',   'n',   'n',   'n',.
 % ID of the mask to be used, 1 = sparam.mask_orient_deg(1), 2 = sparam.mask_orient_deg(2), ...
 sparam.mask_orient_id=[    1,      1,     1,     1,     1,     1,     1,     1,...
                            1,      1,     1,     1,     1,     1,     1,     1,...
-                           1,     1,     1,     1];
+                           1,      1,     1,     1];
 
 sparam.theta_deg    = sparam.theta_deg(1:2:numel(sparam.theta_deg));
 sparam.orient_deg   = sparam.orient_deg(1:2:numel(sparam.theta_deg));
 sparam.mask_type    = sparam.mask_type(1:2:numel(sparam.theta_deg));
 
-sparam.aperture_deg = 10;   % size of circular aperture in deg
-sparam.fill_val     = 0;   % value to fill the 'hole' of the circular aperture
-sparam.outer_val    = 0;   % value to fill the outer region of slant field
+sparam.aperture_deg = 10; % size of circular aperture in deg
+sparam.fill_val     = 0;  % value to fill the 'hole' of the circular aperture
+sparam.outer_val    = 0;  % value to fill the outer region of slant field
 
-%%% RDS parameters
-sparam.noise_level=0;   % percentage of anti-correlated noise, [val]
+% RDS parameters
+sparam.noise_level=0;         % percentage of anti-correlated noise, [val]
 sparam.dotRadius=[0.05,0.05]; % radius of RDS's white/black ovals, [row,col]
-sparam.dotDens=2; % deinsity of dot in RDS image (1-100)
-sparam.colors=[255,0,128]; % RDS colors [dot1,dot2,background](0-255)
-sparam.oversampling_ratio=8; % oversampling_ratio for fine scale RDS images, [val]
+sparam.dotDens=2;             % deinsity of dot in RDS image (1-100)
+sparam.colors=[255,0,128];    % RDS colors [dot1,dot2,background](0-255)
+sparam.oversampling_ratio=8;  % oversampling_ratio for fine scale RDS images, [val]
 
 % the number of trials
 sparam.numTrials=10;
@@ -435,7 +435,7 @@ sparam.phototrg_color=[255,255,255];
 % loading from a separate file
 run(fullfile(fileparts(mfilename('fullpath')),'sizeparams'));
 
-% Or you can set parameters directly.
+% Or you can set the parameters directly.
 %sparam.ipd=6.4;
 %sparam.pix_per_cm=57.1429;
 %sparam.vdist=65;

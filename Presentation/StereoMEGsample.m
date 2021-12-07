@@ -32,7 +32,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2021-12-07 16:37:39 ban"
+% Last Update: "2021-12-08 04:33:46 ban"
 %
 %
 % [input variables]
@@ -41,7 +41,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %                 !!! if 'debug' (case insensitive) is included          !!!
 %                 !!! in subjID string, this program runs as DEBUG mode; !!!
 %                 !!! stimulus images are saved as *.png format at       !!!
-%                 !!! ~/CurvatureShading/Presentation/images             !!!
+%                 !!! ~/StereoMEGsample/Presentation/images              !!!
 %                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
 % acq           : acquisition number (design file number),
 %                 an integer, such as 1, 2, 3, ...

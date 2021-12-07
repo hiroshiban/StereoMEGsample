@@ -13,8 +13,8 @@ function OK=run_exp(subj,exp_id,acq_id)
 % subj   : subject's name, e.g. 'HB'
 % exp_id : experiment ID that you want to run,
 %          should be 0 (practice), or 1,2,3,... (main experiments).
-%          please prepare individual stimulus_files for each of your experiment
-%          conditions and save them like stim_fname=sprintf('oblique3d_stimulus_%02d',exp_id);.
+%          please prepare a stimulus_file for each of your experiment
+%          conditions and save it like stim_fname=sprintf('slant_stimulus_%02d',exp_id);.
 %          then, by specifying the experiment condition by exp_id, you can run
 %          all the required experiment from this script.
 %          multiple numbers (array) can be accepted.
@@ -28,7 +28,7 @@ function OK=run_exp(subj,exp_id,acq_id)
 %           without any error [true/false]
 %
 % Created    : "2018-09-27 11:47:05 ban"
-% Last Update: "2019-03-01 15:15:29 ban"
+% Last Update: "2021-12-08 04:52:30 ban"
 
 % check the input variables
 if nargin<3, help(mfilename()); return; end
