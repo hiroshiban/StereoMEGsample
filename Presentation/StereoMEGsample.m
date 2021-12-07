@@ -32,7 +32,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 %
 % Created    : "2018-10-04 15:41:33 ban"
-% Last Update: "2021-06-13 22:09:28 ban"
+% Last Update: "2021-12-07 16:37:39 ban"
 %
 %
 % [input variables]
@@ -76,7 +76,7 @@ function StereoMEGsample(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % [output files]
 % 1. behavioral result
 %    stored ./subjects/(subjID)/results/(today)
-%    as ./subjects/(subjID)/results/(today)/(subjID)_Slant3D_MEG_results_run_(run_num).mat
+%    as ./subjects/(subjID)/results/(today)/(subjID)_StereoMEGsample_results_run_(run_num).mat
 %
 %
 % [example]
