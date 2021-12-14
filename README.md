@@ -2,7 +2,7 @@
 
 <div align="right">
 Created    : "2018-10-04 15:21:12 ban"<br>
-Last Update: "2021-12-13 07:29:31 ban"
+Last Update: "2021-12-15 02:04:37 ban"
 </div>
 
 <br>
@@ -21,7 +21,7 @@ Last Update: "2021-12-13 07:29:31 ban"
 ## **StereoMEGsample**
 
 
-![StereoMEGsample](imgs/StereoMEGsample.png)  
+![StereoMEGsample](doc/images/StereoMEGsample.png)  
 
 **Sample stimulus presentation codes for stereo vision MEG experiment (Block design) in our research group**  
 
