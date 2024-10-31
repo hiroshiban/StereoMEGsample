@@ -23,7 +23,7 @@ function [winPtr,winRect,nScr,fps,ifi,initDisplay_OK]=InitializePTBDisplays(disp
 % >> Screen('DrawingFinished', windowPtr);
 % >> % Flip stim to display and take timestamp of stimulus-onset after
 % >> % displaying the new stimulus and record it in vector t:
-% >> t=Screen('Flip', windowPtr);
+% >> t=Screen('Flip',windowPtr);
 %
 % [input]
 % disp_mode : display mode, one of "mono", "dual", "dualcross", "dualparallel", "cross", "parallel", "redgreen", "greenred",
@@ -60,7 +60,7 @@ function [winPtr,winRect,nScr,fps,ifi,initDisplay_OK]=InitializePTBDisplays(disp
 %
 %
 % Created : Feb 04 2010 Hiroshi Ban
-% Last Update: "2021-08-03 14:05:27 ban"
+% Last Update: "2024-10-31 13:58:56 ban"
 
 % initialize
 winPtr=[];
